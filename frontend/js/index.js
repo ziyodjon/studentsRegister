@@ -12,7 +12,7 @@ async function addNewStudent(obj){
     return data;
 }
 
-async function getNewStudent(){
+async function getAllStudent(){
     const response = await fetch(SERVER_URL + '/api/students',{
         method: 'GET',
         headers:{'Content-Type':'application-json'},
@@ -34,9 +34,11 @@ async function deleteNewStudent(id){
     return data;
 }
 
-async function updateNewStudent(id){
+async function updateNewStudent(obj,id){
     const response = await fetch(SERVER_URL + '/api/students/' + id,{
-        method: 'PATCH'
+        method: 'PATCH',
+        headers:{'Content-Type':'application-json'},
+        body:JSON.stringify(obj),
     });
 
     let data = await response.json();
@@ -44,35 +46,10 @@ async function updateNewStudent(id){
     return data;
 }
 
-
-const studentLists = await getNewStudent();
-
-// const studentLists = [
-//     {
-//         name: 'Shahzod',
-//         lastname: 'Qudratov',
-//         surname: 'Mahmudovich',
-//         birthday: new Date(1987,12,22),
-//         faculty: 'Экономика',
-//         start: 2016
-//     },
-//     {
-//         name: 'Shavkat',
-//         lastname: 'Ismoilov',
-//         surname: 'Shuhratovich',
-//         birthday: new Date(1990,12,22),
-//         faculty: 'Математика',
-//         start: 2000
-//     },
-//     {
-//         name: 'Ismoil',
-//         lastname: 'Aminov',
-//         surname: 'Isroilovich',
-//         birthday: new Date(1988,5,22),
-//         faculty: 'Дорожная специальность',
-//         start: 2004
-//     }
-// ];
+async function loadStudentCompnent() {
+    let studentLists = await getAllStudent();
+    render(studentLists);
+}
 
 function formatDate(date) {
     var d = new Date(date),
@@ -85,7 +62,7 @@ function formatDate(date) {
     if (day.length < 2) 
         day = '0' + day;
 
-    return [day, month, year].join('/');
+    return [year, month, day].join('/');
 }
 
 function getNewStdTr(stdObj){
@@ -106,16 +83,19 @@ function getNewStdTr(stdObj){
     });
 
     fio.addEventListener('click',function(event){
+        console.log(formatDate(new Date(stdObj.birthday)));
+        const hiddenInput = document.getElementById('hidden-inp').value = stdObj.id;
         const studName = document.getElementById('name-inp').value = stdObj.name;
         const studLastName = document.getElementById('lastname-inp').value= stdObj.lastname;
         const studSurName = document.getElementById('surname-inp').value= stdObj.surname;
-        const studBirthDay = document.getElementById('birthdate-inp').value= stdObj.birthday;
+        const studBirthDay = document.getElementById('birthdate-inp').value = "1985-01-31";
+        //const studBirthDay = document.getElementById('birthdate-inp').value= formatDate(new Date(stdObj.birthday));
         const studFaculty = document.getElementById('faculty-inp').value= stdObj.faculty;
         const studyStart = document.getElementById('studyStart-inp').value= stdObj.studyStart;
     });
 
     fio.textContent = `${stdObj.lastname} ${stdObj.name} ${stdObj.surname}`;
-    birth.textContent = formatDate(stdObj.birthday);
+    birth.textContent = formatDate(new Date(stdObj.birthday));
     faculty.textContent = stdObj.faculty;
     studyStart.textContent = stdObj.studyStart;
     tr.append(fio, birth, faculty, studyStart,deleteBtnTd);
@@ -136,7 +116,7 @@ function render(arr){
     }
 }
 
-render(studentLists);
+await loadStudentCompnent();
 
 
 
@@ -149,9 +129,14 @@ document.getElementById('addForm').addEventListener('submit', async function (ev
     const studBirthDay = document.getElementById('birthdate-inp').value;
     const studFaculty = document.getElementById('faculty-inp').value;
     const studyStart = document.getElementById('studyStart-inp').value;
+    const hiddenInput = document.getElementById('hidden-inp').value;
+
+    const formArea = document.getElementById('addForm');
 
     // let simpleDate = studBirthDay;
     // simpleDate = simpleDate.replace(/-/g,',');
+
+    console.log(hiddenInput);
 
     let newStudent = {
         name: studName,
@@ -161,9 +146,16 @@ document.getElementById('addForm').addEventListener('submit', async function (ev
         faculty: studFaculty,
         studyStart: studyStart
     }
+        
+    let serverData = '';
 
-    const serverData = await addNewStudent(newStudent);
+    if(hiddenInput === null && hiddenInput === ''){
+        serverData = await addNewStudent(newStudent);
+    }else{
+        serverData = await updateNewStudent(newStudent,hiddenInput);
+    }
 
-    studentLists.push(serverData);
-    render(studentLists);
+    formArea.reset()
+
+    await loadStudentCompnent();
 });
