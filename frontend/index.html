@@ -9,26 +9,27 @@
 <body>
     <div class="container pt-4 pb-4">
         <form action="#" class="pb-4" id="addForm">
-            <input type="hidden" id="hidden-inp">
+            <input type="hidden" id="hiddenInput" value="null">
             <div class="mb-3">
-                <input type="text" class="form-control" id="name-inp" placeholder="Имя">
+                <input type="text" class="form-control" name="username" id="name-inp" placeholder="Имя" required>
             </div>
             <div class="mb-3">
-                <input type="text" class="form-control" id="lastname-inp" placeholder="Фамилия">
+                <input type="text" class="form-control" name="lastname" id="lastname-inp" placeholder="Фамилия" required>
             </div>
             <div class="mb-3">
-                <input type="text" class="form-control" id="surname-inp" placeholder="Отчество">
+                <input type="text" class="form-control" name="surname" id="surname-inp" placeholder="Отчество" required>
             </div>
             <div class="mb-3">
-                <input type="date" class="form-control" id="birthdate-inp">
+                <input type="date" class="form-control" name="birthday" id="birthdate-inp" required>
             </div>
             <div class="mb-3">
-                <input type="text" class="form-control" id="faculty-inp" placeholder="Факультет">
+                <input type="text" class="form-control" name="faculty" id="faculty-inp" placeholder="Факультет" required>
             </div>
             <div class="mb-3">
-                <input type="number" class="form-control" id="studyStart-inp" placeholder="Дата поступление">
+                <input type="number" class="form-control" name="studyStart" id="studyStart-inp" placeholder="Дата поступление" required>
             </div>
             <button type="submit" class="addBtn btn btn-primary">Добавить</button>
+            <button type="button" class="cancelBtn btn btn-warning invisible">Отмена</button>
         </form>
 
         <table class="table table-striped">

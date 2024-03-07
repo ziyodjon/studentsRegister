@@ -1,7 +1,12 @@
 const SERVER_URL = 'http://localhost:3000';
+let bufferObj = null;
+const addForm = document.getElementById('addForm');
+const myFormData = new FormData(addForm);
+const addBtn = document.querySelector('.addBtn');
+const cancelBtn = document.querySelector('.cancelBtn');
 
 async function addNewStudent(obj){
-    const response = await fetch(SERVER_URL + '/api/students',{
+    const response = await fetch(`${SERVER_URL}/api/students`,{
         method: 'POST',
         headers:{'Content-Type':'application-json'},
         body:JSON.stringify(obj),
@@ -13,7 +18,7 @@ async function addNewStudent(obj){
 }
 
 async function getAllStudent(){
-    const response = await fetch(SERVER_URL + '/api/students',{
+    const response = await fetch(`${SERVER_URL}/api/students`,{
         method: 'GET',
         headers:{'Content-Type':'application-json'},
     });
@@ -25,7 +30,7 @@ async function getAllStudent(){
 
 
 async function deleteNewStudent(id){
-    const response = await fetch(SERVER_URL + '/api/students/' + id,{
+    const response = await fetch(`${SERVER_URL}/api/students/${id}`,{
         method: 'DELETE'
     });
 
@@ -34,8 +39,8 @@ async function deleteNewStudent(id){
     return data;
 }
 
-async function updateNewStudent(obj,id){
-    const response = await fetch(SERVER_URL + '/api/students/' + id,{
+async function updateNewStudent(id,obj){
+    const response = await fetch(`${SERVER_URL}/api/students/${id}`,{
         method: 'PATCH',
         headers:{'Content-Type':'application-json'},
         body:JSON.stringify(obj),
@@ -62,7 +67,7 @@ function formatDate(date) {
     if (day.length < 2) 
         day = '0' + day;
 
-    return [year, month, day].join('/');
+    return [year, month, day].join('-');
 }
 
 function getNewStdTr(stdObj){
@@ -83,15 +88,45 @@ function getNewStdTr(stdObj){
     });
 
     fio.addEventListener('click',function(event){
-        console.log(formatDate(new Date(stdObj.birthday)));
-        const hiddenInput = document.getElementById('hidden-inp').value = stdObj.id;
+        
+        bufferObj = stdObj;
+
+        // const addForm = document.getElementById('addForm');
+        // const myFormData = new FormData(addForm);
+        
+        // for(const data of myFormData){
+        //     console.log(myFormData.get(''));
+        // }
+
+        const hiddenInput = document.getElementById('hiddenInput').value = stdObj.id;
         const studName = document.getElementById('name-inp').value = stdObj.name;
         const studLastName = document.getElementById('lastname-inp').value= stdObj.lastname;
         const studSurName = document.getElementById('surname-inp').value= stdObj.surname;
-        const studBirthDay = document.getElementById('birthdate-inp').value = "1985-01-31";
-        //const studBirthDay = document.getElementById('birthdate-inp').value= formatDate(new Date(stdObj.birthday));
+        const studBirthDay = document.getElementById('birthdate-inp').value = formatDate(new Date(stdObj.birthday));
         const studFaculty = document.getElementById('faculty-inp').value= stdObj.faculty;
         const studyStart = document.getElementById('studyStart-inp').value= stdObj.studyStart;
+
+        
+        addBtn.classList.remove('btn-primary');
+        addBtn.classList.add('btn-success');
+        addBtn.textContent = 'Редактировать';
+
+        cancelBtn.classList.remove('invisible');
+        cancelBtn.classList.add('visible');
+
+    });
+    
+    cancelBtn.addEventListener('click',function(){
+        
+        addBtn.classList.add('btn-primary');
+        addBtn.classList.remove('btn-success');
+        addBtn.textContent = 'Добавить';
+
+        cancelBtn.classList.add('invisible');
+        cancelBtn.classList.remove('visible');
+
+        addForm.reset();
+
     });
 
     fio.textContent = `${stdObj.lastname} ${stdObj.name} ${stdObj.surname}`;
@@ -103,16 +138,14 @@ function getNewStdTr(stdObj){
 }
 
 function render(arr){
-    
-    let comyArr = [... arr];
+    let copyArr = [... arr];
     
     const studTable = document.getElementById('tBody');
 
     studTable.innerHTML = '';
 
-    for(const stdObj of comyArr){
-        const newTR = getNewStdTr(stdObj);
-        studTable.append(newTR);
+    for(const stdObj of copyArr){
+        studTable.append(getNewStdTr(stdObj));
     }
 }
 
@@ -120,23 +153,18 @@ await loadStudentCompnent();
 
 
 
-document.getElementById('addForm').addEventListener('submit', async function (event)  {
+addForm.addEventListener('submit', async function (event)  {
     event.preventDefault();
-
+    
+    const hiddenInput = document.getElementById('hiddenInput').value;
     const studName = document.getElementById('name-inp').value;
     const studLastName = document.getElementById('lastname-inp').value;
     const studSurName = document.getElementById('surname-inp').value;
     const studBirthDay = document.getElementById('birthdate-inp').value;
     const studFaculty = document.getElementById('faculty-inp').value;
     const studyStart = document.getElementById('studyStart-inp').value;
-    const hiddenInput = document.getElementById('hidden-inp').value;
 
     const formArea = document.getElementById('addForm');
-
-    // let simpleDate = studBirthDay;
-    // simpleDate = simpleDate.replace(/-/g,',');
-
-    console.log(hiddenInput);
 
     let newStudent = {
         name: studName,
@@ -149,13 +177,27 @@ document.getElementById('addForm').addEventListener('submit', async function (ev
         
     let serverData = '';
 
-    if(hiddenInput === null && hiddenInput === ''){
+    //serverData = await updateNewStudent(hiddenInput,newStudent);
+
+    console.log(bufferObj);
+
+    if(bufferObj === null){
         serverData = await addNewStudent(newStudent);
     }else{
-        serverData = await updateNewStudent(newStudent,hiddenInput);
+        serverData = await updateNewStudent(hiddenInput,newStudent);
+        addBtn.classList.add('btn-primary');
+        addBtn.classList.remove('btn-success');
+        addBtn.textContent = 'Добавить';
+
+        cancelBtn.classList.add('invisible');
+        cancelBtn.classList.remove('visible');
     }
 
+    bufferObj = null;
+    console.log(bufferObj);
+
     formArea.reset()
+    
 
     await loadStudentCompnent();
 });
